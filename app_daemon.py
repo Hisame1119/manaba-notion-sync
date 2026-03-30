@@ -18,14 +18,22 @@ async def main():
     _log(f"設定されたタイムテーブル: {', '.join(TIMETABLES)}")
     
     last_run_time = None
+    is_initial_run = True  # 起動直後の初回実行フラグ
     
     while True:
         now = datetime.now()
         current_time_str = now.strftime("%H:%M")
         
-        # 設定された時刻に一致し、かつ同じ分内で重複実行しないかチェック
-        if current_time_str in TIMETABLES and last_run_time != current_time_str:
-            _log(f"予定時刻 ({current_time_str}) になりました。スクレイピングを開始します。")
+        # 1. 予定時刻になった場合
+        # 2. 起動直後の初回実行の場合
+        is_scheduled_time = (current_time_str in TIMETABLES and last_run_time != current_time_str)
+        
+        if is_scheduled_time or is_initial_run:
+            if is_initial_run:
+                _log("起動直後のため、即座に実行を開始します。")
+            else:
+                _log(f"予定時刻 ({current_time_str}) になりました。スクレイピングを開始します。")
+            
             try:
                 # scheduler.py の同期処理を呼び出す
                 await run()
@@ -33,6 +41,7 @@ async def main():
                 _log(f"予期せぬエラーが発生しました: {e}")
             finally:
                 last_run_time = current_time_str
+                is_initial_run = False  # 初回実行完了
                 _log("完了しました。次の予定時刻まで待機します...")
         
         # 10秒に1回現在時刻を確認する（毎分チェックで漏れがないように）
