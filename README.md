@@ -1,5 +1,7 @@
 # manaba-notion-sync
 
+![Notion DB Demo](img/NotionDB_demo.png)
+
 **manaba（マナバ）システムを導入している大学**のポータルサイトを自動巡回して未提出の課題をスクレイピングし、Notion のデータベースへ自動で同期・登録する全自動スクリプトです。
 
 このプロジェクトは、DockerとPlaywrightを用いて構築されており、**サーバー上で放置するだけで多要素認証（MFA）すらも自力で突破して課題情報を同期し続ける** ことを目的としています。
@@ -22,6 +24,14 @@
 - Docker および Docker Compose がインストールされた環境
 - Notion API の Integrations トークンと、対象データベースのID
 
+> [!TIP]
+> **Notion データベースの準備**
+> ゼロから必要なプロパティ（列）を作成するのは手間がかかるため、以下の**テンプレートデータベースを複製（Duplicate）して使用することを強く推奨**します！
+> 
+> 🔗 **[manaba-notion-sync 用 テンプレートデータベース](https://trail-plant-e9b.notion.site/98fd180df25083a0837081bcd8dc8c4e)**
+> 
+> （リンク先を開き、右上の「複製」アイコンからご自身のNotionワークスペースにコピーしてください。コピー後、右上の「･･･（設定）」→「コネクトの追加（Add connections）」から作成したボットを招待するのをお忘れなく！）
+
 ### 2. 環境変数の設定
 プロジェクトのルートディレクトリに `.env` ファイルを作成し、以下の内容を記載してください。（セキュリティ設定として、このファイルはGitには追跡されません）
 
@@ -40,6 +50,10 @@ MANABA_MFA_SECRET=YOUR_MFA_SECRET_BASE32_HERE
 
 # （任意）1日のうち実行したい時刻をカンマ区切りで指定（デフォルトは08:00,12:00,17:00,22:00）
 SCRAPING_TIMETABLES=08:30,12:00,15:00,23:00
+
+# （デモ用データ投入時のみ使用）
+DEMO_NOTION_DATABASE_ID=xxxxxxxxxxxxxxxx
+DEMO_NOTION_DATASOURCE_ID=xxxxxxxxxxxxxxxx
 ```
 
 ### 3. デプロイと起動
@@ -50,6 +64,17 @@ docker compose up -d --build
 ```
 
 初回起動時に認証を突破し、`logs/` ディレクトリ内にセッション維持用の `cookies.json` が生成・保存されます。以降は設定されたタイムテーブルに従ってスケジュール実行され続けます！
+
+---
+
+## 開発・テスト用ツール 🧪
+### デモデータの投入 (`generate_demo.py`)
+セットアップした Notion データベースが正しく表示されるか確認するために、17件のダミー課題データを投入するスクリプトを用意しています。
+1. `.env` に `DEMO_NOTION_DATABASE_ID` と `DEMO_NOTION_DATASOURCE_ID` を設定します。
+2. 以下のコマンドを実行します。
+```bash
+python generate_demo.py
+```
 
 ---
 
