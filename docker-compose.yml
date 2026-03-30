@@ -1,0 +1,11 @@
+version: '3.8'
+
+services:
+  scraper:
+    build: .
+    container_name: assignment-sync
+    restart: always      # サーバー再起動時やクラッシュ時に自動で復旧
+    env_file:
+      - .env             # 同一階層の .env から環境変数を読み込む
+    volumes:
+      - ./logs:/app/logs             # ログや永続データディレクトリをホストと同期
